@@ -6,7 +6,10 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
 )
+
+var lockers = make(map[string]*sync.Mutex)
 
 func containsFile(path string) error {
 	_, err := os.Stat(getFileName(path))
@@ -42,4 +45,25 @@ func fetchFile(url string) error {
 
 func getFileName(path string) string {
 	return filepath.Base(path)
+}
+
+func lockFile(path string) *sync.Once {
+	filename := getFileName(path)
+
+	_, ok := lockers[filename]
+	if !ok {
+		lockers[filename] = &sync.Mutex{}
+	}
+
+	lockers[filename].Lock()
+
+	return &sync.Once{}
+}
+
+func unlockFile(path string) {
+	filename := getFileName(path)
+
+	if locker, ok := lockers[filename]; ok {
+		locker.Unlock()
+	}
 }
