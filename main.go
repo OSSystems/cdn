@@ -27,6 +27,7 @@ func main() {
 
 	go func() {
 		e := echo.New()
+		e.HideBanner = true
 
 		e.GET("*", handleHTTP)
 
