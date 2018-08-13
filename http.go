@@ -5,5 +5,5 @@ import (
 )
 
 func handleHTTP(c echo.Context) error {
-	return c.File(c.Request().URL.Path[1:])
+	return c.File(getFileName(c.Request().URL.Path[1:]))
 }

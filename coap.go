@@ -15,7 +15,7 @@ func (h *coapHandler) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Messag
 		fetchFile(req.PathString())
 	}
 
-	payload, err := ioutil.ReadFile(req.PathString())
+	payload, err := ioutil.ReadFile(getFileName(req.PathString()))
 	if err != nil {
 		panic(err)
 	}
