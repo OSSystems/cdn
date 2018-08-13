@@ -12,7 +12,10 @@ type coapHandler struct {
 
 func (h *coapHandler) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Message) *coap.Message {
 	if containsFile(req.PathString()) != nil {
-		fetchFile(req.PathString())
+		err := fetchFile(req.PathString())
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	payload, err := ioutil.ReadFile(getFileName(req.PathString()))

@@ -5,5 +5,14 @@ import (
 )
 
 func handleHTTP(c echo.Context) error {
-	return c.File(getFileName(c.Request().URL.Path[1:]))
+	url := c.Request().URL.Path[1:]
+
+	if containsFile(url) != nil {
+		err := fetchFile(url)
+		if err != nil {
+			return err
+		}
+	}
+
+	return c.File(getFileName(url))
 }
