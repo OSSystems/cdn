@@ -1,8 +1,8 @@
 package main
 
 import (
-	"io/ioutil"
 	"net"
+	"os"
 
 	coap "github.com/dustin/go-coap"
 )
@@ -23,16 +23,34 @@ func (h *coapHandler) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Messag
 
 	once.Do(func() { unlockFile(req.PathString()) })
 
-	payload, err := ioutil.ReadFile(getFileName(req.PathString()))
+	f, err := os.Open(getFileName(req.PathString()))
+	if err != nil {
+		panic(err)
+	}
+
+	fi, err := f.Stat()
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = f.Seek(int64(req.Block2.Offset()), 0)
+	if err != nil {
+		panic(err)
+	}
+
+	payload := make([]byte, req.Block2.Size())
+
+	_, err = f.Read(payload)
 	if err != nil {
 		panic(err)
 	}
 
 	return &coap.Message{
-		Type:      coap.Acknowledgement,
-		MessageID: req.MessageID,
-		Token:     req.Token,
-		Code:      coap.Content,
-		Payload:   payload,
+		Type:        coap.Acknowledgement,
+		MessageID:   req.MessageID,
+		Token:       req.Token,
+		Code:        coap.Content,
+		Payload:     payload,
+		PayloadSize: fi.Size(),
 	}
 }
