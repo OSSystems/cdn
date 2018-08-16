@@ -42,7 +42,7 @@ func (h *coapHandler) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Messag
 
 	payload := make([]byte, req.Block2.Size)
 
-	_, err = f.Read(payload)
+	n, err := f.Read(payload)
 	if err != nil {
 		panic(err)
 	}
@@ -52,7 +52,7 @@ func (h *coapHandler) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Messag
 		MessageID: req.MessageID,
 		Token:     req.Token,
 		Code:      coap.Content,
-		Payload:   payload,
+		Payload:   payload[0:n],
 	}
 
 	msg.AddOption(coap.Size2, uint32(fi.Size()))
