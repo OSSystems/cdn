@@ -28,6 +28,8 @@ func (h *coapHandler) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Messag
 		panic(err)
 	}
 
+	defer f.Close()
+
 	fi, err := f.Stat()
 	if err != nil {
 		panic(err)
