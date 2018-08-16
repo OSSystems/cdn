@@ -33,12 +33,12 @@ func (h *coapHandler) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Messag
 		panic(err)
 	}
 
-	_, err = f.Seek(int64(req.Block2.Offset()), 0)
+	_, err = f.Seek(int64(req.Block2.Num*req.Block2.Size), 0)
 	if err != nil {
 		panic(err)
 	}
 
-	payload := make([]byte, req.Block2.Size())
+	payload := make([]byte, req.Block2.Size)
 
 	_, err = f.Read(payload)
 	if err != nil {
