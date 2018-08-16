@@ -45,12 +45,15 @@ func (h *coapHandler) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Messag
 		panic(err)
 	}
 
-	return &coap.Message{
-		Type:        coap.Acknowledgement,
-		MessageID:   req.MessageID,
-		Token:       req.Token,
-		Code:        coap.Content,
-		Payload:     payload,
-		PayloadSize: fi.Size(),
+	msg := &coap.Message{
+		Type:      coap.Acknowledgement,
+		MessageID: req.MessageID,
+		Token:     req.Token,
+		Code:      coap.Content,
+		Payload:   payload,
 	}
+
+	msg.AddOption(coap.Size2, uint32(fi.Size()))
+
+	return msg
 }
