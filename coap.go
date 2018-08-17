@@ -3,6 +3,7 @@ package main
 import (
 	"net"
 	"os"
+	"time"
 
 	coap "github.com/OSSystems/go-coap"
 )
@@ -63,7 +64,9 @@ func (h *coapHandler) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Messag
 
 	msg.AddOption(coap.Size2, uint32(fi.Size()))
 
-	logger.Log(req.PathString(), n)
+	if logger != nil {
+		logger.Log(req.PathString(), a.String(), n, fi.Size(), time.Now())
+	}
 
 	return msg
 }

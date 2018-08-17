@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type logger struct{}
 
@@ -8,8 +11,8 @@ func (l logger) Init() {
 	fmt.Println("Init")
 }
 
-func (l logger) Log(path string, bytes int) {
-	fmt.Println(path, bytes)
+func (l logger) Log(path string, addr string, bytes int, size int64, timestamp time.Time) {
+	fmt.Println(path, addr, bytes, size, timestamp)
 }
 
 var Logger logger
