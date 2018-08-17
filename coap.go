@@ -63,5 +63,7 @@ func (h *coapHandler) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Messag
 
 	msg.AddOption(coap.Size2, uint32(fi.Size()))
 
+	logger.Log(req.PathString(), n)
+
 	return msg
 }
