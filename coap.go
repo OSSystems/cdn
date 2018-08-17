@@ -4,7 +4,7 @@ import (
 	"net"
 	"os"
 
-	coap "github.com/dustin/go-coap"
+	coap "github.com/OSSystems/go-coap"
 )
 
 type coapHandler struct {

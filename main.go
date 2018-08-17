@@ -5,7 +5,7 @@ import (
 	"os"
 	"plugin"
 
-	coap "github.com/dustin/go-coap"
+	coap "github.com/OSSystems/go-coap"
 	"github.com/labstack/echo"
 )
 
