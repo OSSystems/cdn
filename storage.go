@@ -19,7 +19,9 @@ func containsFile(path string) error {
 func fetchFile(url string) error {
 	cli := &http.Client{}
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("http://localhost:8000/%s", url), nil)
+	backend := rootCmd.Flag("backend").Value.String()
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s", backend, url), nil)
 	if err != nil {
 		return err
 	}
