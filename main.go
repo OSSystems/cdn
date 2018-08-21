@@ -24,8 +24,10 @@ func init() {
 }
 
 func main() {
-	rootCmd.PersistentFlags().StringP("backend", "b", "", "Backend HTTP server URL")
-	rootCmd.PersistentFlags().StringP("logger", "l", "", "Logger plugin")
+	rootCmd.PersistentFlags().StringP("backend", "", "", "Backend HTTP server URL")
+	rootCmd.PersistentFlags().StringP("logger", "", "", "Logger plugin")
+	rootCmd.PersistentFlags().StringP("http", "", "0.0.0.0:8080", "HTTP listen address")
+	rootCmd.PersistentFlags().StringP("coap", "", "0.0.0.0:5000", "CoAP listen address")
 	rootCmd.MarkPersistentFlagRequired("backend")
 
 	if err := rootCmd.Execute(); err != nil {
@@ -61,7 +63,7 @@ func execute(cmd *cobra.Command, args []string) {
 		logger.Init()
 	}
 
-	udpAddr, err := net.ResolveUDPAddr("udp", "0.0.0.0:5000")
+	udpAddr, err := net.ResolveUDPAddr("udp", cmd.Flag("coap").Value.String())
 	if err != nil {
 		panic(err)
 	}
@@ -84,7 +86,7 @@ func execute(cmd *cobra.Command, args []string) {
 
 		e.GET("*", handleHTTP)
 
-		err = e.Start(":8080")
+		err = e.Start(cmd.Flag("http").Value.String())
 		if err != nil {
 			panic(err)
 		}
