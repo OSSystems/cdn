@@ -9,6 +9,7 @@ import (
 
 	coap "github.com/OSSystems/go-coap"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"github.com/spf13/cobra"
 )
 
@@ -83,6 +84,8 @@ func execute(cmd *cobra.Command, args []string) {
 	go func() {
 		e := echo.New()
 		e.HideBanner = true
+
+		e.Use(middleware.BodyDump(logHTTPRequest))
 
 		e.GET("*", handleHTTP)
 
