@@ -2,7 +2,6 @@ package main
 
 import (
 	"net"
-	"os"
 	"time"
 
 	coap "github.com/OSSystems/go-coap"
@@ -12,8 +11,7 @@ type coapHandler struct {
 }
 
 func (h *coapHandler) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Message) *coap.Message {
-	once := lockFile(req.PathString())
-	defer once.Do(func() { unlockFile(req.PathString()) })
+	path := req.PathString()
 
 	msg := &coap.Message{
 		Type:      coap.Acknowledgement,
@@ -21,29 +19,23 @@ func (h *coapHandler) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Messag
 		Token:     req.Token,
 	}
 
-	if containsFile(req.PathString()) != nil {
-		err := fetchFile(req.PathString())
+	meta := app.objstore.Contains(path)
+	if meta == nil {
+		var err error
+		meta, err = app.objstore.Fetch(path)
 		if err != nil {
 			msg.Code = coap.InternalServerError
 			return msg
 		}
 	}
 
-	once.Do(func() { unlockFile(req.PathString()) })
-
-	f, err := os.Open(getFileName(req.PathString()))
+	f, err := app.storage.Read(meta.Name)
 	if err != nil {
 		msg.Code = coap.NotFound
 		return msg
 	}
 
 	defer f.Close()
-
-	fi, err := f.Stat()
-	if err != nil {
-		msg.Code = coap.InternalServerError
-		return msg
-	}
 
 	_, err = f.Seek(int64(req.Block2.Num*req.Block2.Size), 0)
 	if err != nil {
@@ -62,10 +54,15 @@ func (h *coapHandler) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Messag
 	msg.Code = coap.Content
 	msg.Payload = payload[0:n]
 
-	msg.AddOption(coap.Size2, uint32(fi.Size()))
+	msg.AddOption(coap.Size2, uint32(meta.Size))
 
-	if logger != nil {
-		logger.Log(req.PathString(), a.String(), n, fi.Size(), time.Now())
+	// is the last block?
+	if int64(req.Block2.Num*req.Block2.Size) >= meta.Size-int64(req.Block2.Size) {
+		app.journal.Hit(meta)
+	}
+
+	if app.logger != nil {
+		app.logger.Log(req.PathString(), a.String(), n, meta.Size, time.Now())
 	}
 
 	return msg

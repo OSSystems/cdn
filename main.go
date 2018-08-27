@@ -8,40 +8,65 @@ import (
 	"plugin"
 
 	coap "github.com/OSSystems/go-coap"
+	"github.com/boltdb/bolt"
+	"github.com/gustavosbarreto/cdn/journal"
+	"github.com/gustavosbarreto/cdn/objstore"
+	"github.com/gustavosbarreto/cdn/storage"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/spf13/cobra"
 )
 
-var logger Logger
+var storageBucket *bolt.Bucket
 
-var rootCmd *cobra.Command
+type App struct {
+	cmd *cobra.Command
+
+	objstore *objstore.ObjStore
+	journal  *journal.Journal
+	storage  *storage.Storage
+
+	logger Logger
+}
+
+var app *App
 
 func init() {
-	rootCmd = &cobra.Command{
-		Use: "cdn",
-		Run: execute,
+	db, err := bolt.Open("state.db", 0600, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	app = &App{
+		cmd: &cobra.Command{
+			Use: "cdn",
+			Run: execute,
+		},
+		journal: journal.NewJournal(db, 9999999),
+		storage: storage.NewStorage("./"),
 	}
 }
 
 func main() {
-	rootCmd.PersistentFlags().StringP("backend", "", "", "Backend HTTP server URL")
-	rootCmd.PersistentFlags().StringP("logger", "", "", "Logger plugin")
-	rootCmd.PersistentFlags().StringP("http", "", "0.0.0.0:8080", "HTTP listen address")
-	rootCmd.PersistentFlags().StringP("coap", "", "0.0.0.0:5000", "CoAP listen address")
-	rootCmd.MarkPersistentFlagRequired("backend")
+	app.cmd.PersistentFlags().StringP("backend", "", "", "Backend HTTP server URL")
+	app.cmd.PersistentFlags().StringP("logger", "", "", "Logger plugin")
+	app.cmd.PersistentFlags().StringP("http", "", "0.0.0.0:8080", "HTTP listen address")
+	app.cmd.PersistentFlags().StringP("coap", "", "0.0.0.0:5000", "CoAP listen address")
+	app.cmd.MarkPersistentFlagRequired("backend")
 
-	if err := rootCmd.Execute(); err != nil {
+	if err := app.cmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 }
 
 func execute(cmd *cobra.Command, args []string) {
-	_, err := url.ParseRequestURI(rootCmd.Flag("backend").Value.String())
+	backend, err := url.ParseRequestURI(cmd.Flag("backend").Value.String())
 	if err != nil {
 		panic(err)
 	}
+
+	app.objstore = objstore.NewObjStore(backend.String(), app.journal, app.storage)
 
 	loggerPlugin := cmd.Flag("logger").Value.String()
 	if loggerPlugin != "" {
@@ -56,12 +81,12 @@ func execute(cmd *cobra.Command, args []string) {
 		}
 
 		var ok bool
-		logger, ok = sym.(Logger)
+		app.logger, ok = sym.(Logger)
 		if !ok {
 			panic("unexpected type from module symbol")
 		}
 
-		logger.Init()
+		app.logger.Init()
 	}
 
 	udpAddr, err := net.ResolveUDPAddr("udp", cmd.Flag("coap").Value.String())
