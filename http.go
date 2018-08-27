@@ -31,7 +31,7 @@ func handleHTTP(c echo.Context) error {
 
 	defer f.Close()
 
-	http.ServeContent(c.Response(), c.Request(), meta.Name, time.Now(), f)
+	http.ServeContent(c.Response(), c.Request(), meta.Name, time.Time(meta.Timestamp), f)
 
 	return nil
 }

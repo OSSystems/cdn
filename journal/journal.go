@@ -167,7 +167,8 @@ func (j *Journal) LeastPopular() ([]*FileMeta, error) {
 }
 
 type FileMeta struct {
-	Name string `json:"name"`
-	Size int64  `json:"size"`
-	Hits int64  `json:"hits"`
+	Name      string   `json:"name"`
+	Size      int64    `json:"size"`
+	Hits      int64    `json:"hits"`
+	Timestamp UnixTime `json:"timestamp"`
 }
