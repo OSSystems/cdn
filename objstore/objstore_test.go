@@ -13,6 +13,7 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/gustavosbarreto/cdn/journal"
+	"github.com/gustavosbarreto/cdn/pkg/encodedtime"
 	"github.com/gustavosbarreto/cdn/storage"
 	"github.com/stretchr/testify/assert"
 )
@@ -76,7 +77,9 @@ func TestObjStoreContains(t *testing.T) {
 	data := make([]byte, 4)
 	rand.Read(data)
 
-	meta := &journal.FileMeta{Name: "file", Size: int64(len(data)), Hits: 0, Timestamp: journal.NewUnixTime(0)}
+	encodedtime.NewUnix(0)
+
+	meta := &journal.FileMeta{Name: "file", Size: int64(len(data)), Hits: 0, Timestamp: encodedtime.NewUnix(0)}
 
 	err = j.Put(meta)
 	assert.NoError(t, err)

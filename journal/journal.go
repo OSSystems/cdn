@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/boltdb/bolt"
+	"github.com/gustavosbarreto/cdn/pkg/encodedtime"
 )
 
 var journalBucketName = []byte("mapping")
@@ -167,8 +168,8 @@ func (j *Journal) LeastPopular() ([]*FileMeta, error) {
 }
 
 type FileMeta struct {
-	Name      string   `json:"name"`
-	Size      int64    `json:"size"`
-	Hits      int64    `json:"hits"`
-	Timestamp UnixTime `json:"timestamp"`
+	Name      string           `json:"name"`
+	Size      int64            `json:"size"`
+	Hits      int64            `json:"hits"`
+	Timestamp encodedtime.Unix `json:"timestamp"`
 }

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/gustavosbarreto/cdn/journal"
+	"github.com/gustavosbarreto/cdn/pkg/encodedtime"
 	"github.com/gustavosbarreto/cdn/storage"
 )
 
@@ -45,7 +46,7 @@ func (obj *ObjStore) Fetch(url string) (*journal.FileMeta, error) {
 		return nil, err
 	}
 
-	meta := &journal.FileMeta{Name: filename, Hits: 0, Size: size, Timestamp: journal.NewUnixTime(0)}
+	meta := &journal.FileMeta{Name: filename, Hits: 0, Size: size, Timestamp: encodedtime.NewUnix(0)}
 
 	err = obj.journal.AddFile(meta)
 	if err != nil {
