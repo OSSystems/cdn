@@ -17,8 +17,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var storageBucket *bolt.Bucket
-
 type App struct {
 	cmd *cobra.Command
 
@@ -32,17 +30,11 @@ type App struct {
 var app *App
 
 func init() {
-	db, err := bolt.Open("state.db", 0600, nil)
-	if err != nil {
-		panic(err)
-	}
-
 	app = &App{
 		cmd: &cobra.Command{
 			Use: "cdn",
 			Run: execute,
 		},
-		journal: journal.NewJournal(db, 9999999),
 		storage: storage.NewStorage("./"),
 	}
 }
@@ -50,6 +42,7 @@ func init() {
 func main() {
 	app.cmd.PersistentFlags().StringP("backend", "", "", "Backend HTTP server URL")
 	app.cmd.PersistentFlags().StringP("logger", "", "", "Logger plugin")
+	app.cmd.PersistentFlags().StringP("db", "", "state.db", "Database file")
 	app.cmd.PersistentFlags().StringP("http", "", "0.0.0.0:8080", "HTTP listen address")
 	app.cmd.PersistentFlags().StringP("coap", "", "0.0.0.0:5000", "CoAP listen address")
 	app.cmd.MarkPersistentFlagRequired("backend")
@@ -66,6 +59,12 @@ func execute(cmd *cobra.Command, args []string) {
 		panic(err)
 	}
 
+	db, err := bolt.Open(cmd.Flag("db").Value.String(), 0600, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	app.journal = journal.NewJournal(db, 9999999)
 	app.objstore = objstore.NewObjStore(backend.String(), app.journal, app.storage)
 
 	loggerPlugin := cmd.Flag("logger").Value.String()
