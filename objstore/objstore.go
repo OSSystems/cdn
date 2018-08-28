@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
-	"time"
 
 	"github.com/gustavosbarreto/cdn/journal"
 	"github.com/gustavosbarreto/cdn/storage"
@@ -46,7 +45,7 @@ func (obj *ObjStore) Fetch(url string) (*journal.FileMeta, error) {
 		return nil, err
 	}
 
-	meta := &journal.FileMeta{Name: filename, Hits: 0, Size: size, Timestamp: journal.UnixTime(time.Now())}
+	meta := &journal.FileMeta{Name: filename, Hits: 0, Size: size, Timestamp: journal.NewUnixTime(0)}
 
 	err = obj.journal.AddFile(meta)
 	if err != nil {

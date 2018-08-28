@@ -8,8 +8,8 @@ import (
 // UnixTime converts unix times to time.Time
 type UnixTime time.Time
 
-// NewUnix returns a Unix instance with secs since unix-0
-func NewUnix(secs int64) UnixTime {
+// NewUnixTime returns a Unix instance with secs since unix-0
+func NewUnixTime(secs int64) UnixTime {
 	return UnixTime(time.Unix(secs, 0))
 }
 
