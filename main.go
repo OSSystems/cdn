@@ -44,7 +44,7 @@ func main() {
 	app.cmd.PersistentFlags().StringP("db", "", "state.db", "Database file")
 	app.cmd.PersistentFlags().StringP("storage", "", "./", "Storage dir")
 	app.cmd.PersistentFlags().StringP("http", "", "0.0.0.0:8080", "HTTP listen address")
-	app.cmd.PersistentFlags().StringP("coap", "", "0.0.0.0:5000", "CoAP listen address")
+	app.cmd.PersistentFlags().StringP("coap", "", "0.0.0.0:5683", "CoAP listen address")
 	app.cmd.MarkPersistentFlagRequired("backend")
 
 	if err := app.cmd.Execute(); err != nil {

@@ -17,7 +17,7 @@ Usage:
 
 Flags:
       --backend string   Backend HTTP server URL
-      --coap string      CoAP listen address (default "0.0.0.0:5000")
+      --coap string      CoAP listen address (default "0.0.0.0:5683")
       --db string        Database file (default "state.db")
   -h, --help             help for cdn
       --http string      HTTP listen address (default "0.0.0.0:8080")
