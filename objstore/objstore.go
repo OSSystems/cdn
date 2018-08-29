@@ -43,6 +43,10 @@ func (obj *ObjStore) Fetch(url string) (*journal.FileMeta, error) {
 
 	defer res.Body.Close()
 
+	if res.StatusCode != http.StatusOK {
+		return nil, ErrNotFound
+	}
+
 	filename := obj.FileName(url)
 
 	size, err := obj.storage.Write(filename, res.Body)
