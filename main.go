@@ -43,6 +43,7 @@ func main() {
 	app.cmd.PersistentFlags().StringP("monitor", "", "", "Monitor plugin")
 	app.cmd.PersistentFlags().StringP("db", "", "state.db", "Database file")
 	app.cmd.PersistentFlags().StringP("storage", "", "./", "Storage dir")
+	app.cmd.PersistentFlags().IntP("size", "", -1, "Max storage size in bytes (-1 for unlimited)")
 	app.cmd.PersistentFlags().StringP("http", "", "0.0.0.0:8080", "HTTP listen address")
 	app.cmd.PersistentFlags().StringP("coap", "", "0.0.0.0:5683", "CoAP listen address")
 	app.cmd.MarkPersistentFlagRequired("backend")
@@ -64,8 +65,13 @@ func execute(cmd *cobra.Command, args []string) {
 		panic(err)
 	}
 
+	size, err := cmd.Flags().GetInt("size")
+	if err != nil {
+		panic(err)
+	}
+
 	app.storage = storage.NewStorage(cmd.Flag("storage").Value.String())
-	app.journal = journal.NewJournal(db, 9999999)
+	app.journal = journal.NewJournal(db, int64(size))
 	app.objstore = objstore.NewObjStore(backend.String(), app.journal, app.storage)
 
 	monitorPlugin := cmd.Flag("monitor").Value.String()

@@ -53,7 +53,7 @@ func (j *Journal) AddFile(meta *FileMeta) error {
 
 func (j *Journal) Put(meta *FileMeta) error {
 	return j.db.Update(func(tx *bolt.Tx) error {
-		if j.Size()+meta.Size > j.maxSize {
+		if j.maxSize > -1 && j.Size()+meta.Size > j.maxSize {
 			return ErrNotEnoughSpace
 		}
 
