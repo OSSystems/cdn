@@ -1,14 +1,18 @@
 package objstore
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
 
 	"github.com/gustavosbarreto/cdn/journal"
 	"github.com/gustavosbarreto/cdn/pkg/encodedtime"
 	"github.com/gustavosbarreto/cdn/storage"
 )
+
+var ErrNotFound = errors.New("not found")
 
 type ObjStore struct {
 	backend string
@@ -56,7 +60,7 @@ func (obj *ObjStore) Fetch(url string) (*journal.FileMeta, error) {
 	return meta, nil
 }
 
-func (obj *ObjStore) Contains(url string) *journal.FileMeta {
+func (obj *ObjStore) Get(url string) *journal.FileMeta {
 	filename := obj.FileName(url)
 
 	meta, err := obj.journal.Get(filename)
@@ -70,6 +74,26 @@ func (obj *ObjStore) Contains(url string) *journal.FileMeta {
 	}
 
 	return meta
+}
+
+func (obj *ObjStore) Serve(url string) (*journal.FileMeta, *os.File, error) {
+	filename := obj.FileName(url)
+
+	meta := obj.Get(filename)
+	if meta == nil {
+		var err error
+		meta, err = obj.Fetch(filename)
+		if err != nil {
+			return nil, nil, ErrNotFound
+		}
+	}
+
+	f, err := obj.storage.Read(meta.Name)
+	if err != nil {
+		return meta, nil, ErrNotFound
+	}
+
+	return meta, f, nil
 }
 
 func (obj *ObjStore) FileName(url string) string {

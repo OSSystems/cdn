@@ -62,7 +62,7 @@ func TestObjStoreFetch(t *testing.T) {
 	assert.Equal(t, int64(0), meta.Hits)
 }
 
-func TestObjStoreContains(t *testing.T) {
+func TestObjStoreGet(t *testing.T) {
 	dir, err := ioutil.TempDir("", "test")
 	assert.NoError(t, err)
 
@@ -88,7 +88,7 @@ func TestObjStoreContains(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, int64(len(data)), n)
 
-	meta2 := obj.Contains("/file")
+	meta2 := obj.Get("/file")
 	assert.NotNil(t, meta)
 	assert.Equal(t, meta, meta2)
 }

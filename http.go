@@ -4,32 +4,24 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gustavosbarreto/cdn/objstore"
 	"github.com/labstack/echo"
 )
 
 func handleHTTP(c echo.Context) error {
 	path := c.Request().URL.Path[1:]
 
-	meta := app.objstore.Contains(path)
-	if meta == nil {
-		var err error
-		meta, err = app.objstore.Fetch(path)
-		if err != nil {
-			return err
-		}
-	}
-
-	err := app.journal.Hit(meta)
-	if err != nil {
-		return err
-	}
-
-	f, err := app.storage.Read(meta.Name)
-	if err != nil {
-		return err
+	meta, f, err := app.objstore.Serve(path)
+	if err == objstore.ErrNotFound {
+		return echo.NotFoundHandler(c)
 	}
 
 	defer f.Close()
+
+	err = app.journal.Hit(meta)
+	if err != nil {
+		return err
+	}
 
 	http.ServeContent(c.Response(), c.Request(), meta.Name, time.Time(meta.Timestamp), f)
 

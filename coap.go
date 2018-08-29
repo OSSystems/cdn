@@ -5,6 +5,7 @@ import (
 	"time"
 
 	coap "github.com/OSSystems/go-coap"
+	"github.com/gustavosbarreto/cdn/objstore"
 )
 
 type coapHandler struct {
@@ -19,18 +20,8 @@ func (h *coapHandler) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Messag
 		Token:     req.Token,
 	}
 
-	meta := app.objstore.Contains(path)
-	if meta == nil {
-		var err error
-		meta, err = app.objstore.Fetch(path)
-		if err != nil {
-			msg.Code = coap.InternalServerError
-			return msg
-		}
-	}
-
-	f, err := app.storage.Read(meta.Name)
-	if err != nil {
+	meta, f, err := app.objstore.Serve(path)
+	if err == objstore.ErrNotFound {
 		msg.Code = coap.NotFound
 		return msg
 	}
