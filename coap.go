@@ -61,8 +61,8 @@ func (h *coapHandler) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Messag
 		app.journal.Hit(meta)
 	}
 
-	if app.logger != nil {
-		app.logger.Log(req.PathString(), a.String(), n, meta.Size, time.Now())
+	if app.monitor != nil {
+		app.monitor.RecordMetric(req.PathString(), a.String(), n, meta.Size, time.Now())
 	}
 
 	return msg

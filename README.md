@@ -18,33 +18,35 @@ Usage:
 Flags:
       --backend string   Backend HTTP server URL
       --coap string      CoAP listen address (default "0.0.0.0:5000")
+      --db string        Database file (default "state.db")
   -h, --help             help for cdn
       --http string      HTTP listen address (default "0.0.0.0:8080")
-      --logger string    Logger plugin
+      --monitor string   Monitor plugin
+      --storage string   Storage dir (default "./")
 ```
 
 Example:
 
 ```
-./cdn --backend http://localhost:8000 --logger printlogger/printlogger.so
+./cdn --backend http://localhost:8000 --monitor samplemonitor/samplemonitor.so
 ```
 
-## Logger plugin
+## Monitor plugin
 
-To create your own logger plugin you must implement the following `Logger` interface:
+To create your own monitor plugin you must implement the following `Monitor` interface:
 
 ```go
-type Logger interface {
+type Monitor interface {
         Init()
-        Log(path string, addr string, bytes int, size int64, timestamp time.Time)
+        RecordMetric(path string, addr string, bytes int, size int64, timestamp time.Time)
 }
 ```
 
-See [printlogger/logger.go](printlogger/logger.go) for an working example of logger plugin implementation.
+See [samplemonitor/monitor.go](samplemonitor/monitor.go) for an working example of monitor plugin implementation.
 
 To build the plugin use:
 
 ```
-$ cd printlogger
+$ cd samplemonitor
 $ go build -buildmode=plugin
 ```
