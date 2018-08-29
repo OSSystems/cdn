@@ -39,6 +39,10 @@ func (j *Journal) AddFile(meta *FileMeta) error {
 				return nil
 			}
 
+			if len(list) == 0 {
+				return ErrNotEnoughSpace
+			}
+
 			err = j.Delete(list[0])
 			if err != nil {
 				return err
