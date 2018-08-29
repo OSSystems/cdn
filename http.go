@@ -38,8 +38,6 @@ func handleHTTP(c echo.Context) error {
 
 func logHTTPRequest(c echo.Context, reqBody, resBody []byte) {
 	if c.Response().Status == http.StatusOK {
-		if app.monitor != nil {
-			app.monitor.RecordMetric(c.Request().URL.String(), c.Request().RemoteAddr, len(resBody), int64(len(resBody)), time.Now())
-		}
+		app.monitor.RecordMetric(c.Request().URL.String(), c.Request().RemoteAddr, len(resBody), int64(len(resBody)), time.Now())
 	}
 }

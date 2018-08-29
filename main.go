@@ -86,8 +86,11 @@ func execute(cmd *cobra.Command, args []string) {
 			panic("unexpected type from module symbol")
 		}
 
-		app.monitor.Init()
+	} else {
+		app.monitor = &dummyMonitor{}
 	}
+
+	app.monitor.Init()
 
 	udpAddr, err := net.ResolveUDPAddr("udp", cmd.Flag("coap").Value.String())
 	if err != nil {
