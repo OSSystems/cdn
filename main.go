@@ -112,6 +112,7 @@ func execute(cmd *cobra.Command, args []string) {
 	go func() {
 		e := echo.New()
 		e.HideBanner = true
+		e.HidePort = true
 
 		e.Use(middleware.BodyDump(logHTTPRequest))
 
