@@ -8,6 +8,10 @@
 
 This project aims to provide an caching layer for any HTTP backend, e.g. Amazon S3.
 
+<p align="center">
+   <img align="center" src="docs/diagram.png"/>
+</p>
+
 ## Usage
 
 ```
@@ -21,7 +25,9 @@ Flags:
       --db string        Database file (default "state.db")
   -h, --help             help for cdn
       --http string      HTTP listen address (default "0.0.0.0:8080")
+      --log string       Log level (debug, info, warn, error, fatal, panic) (default "info")
       --monitor string   Monitor plugin
+      --size int         Max storage size in bytes (-1 for unlimited) (default -1)
       --storage string   Storage dir (default "./")
 ```
 
