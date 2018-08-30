@@ -10,6 +10,8 @@ import (
 	"github.com/gustavosbarreto/cdn/journal"
 	"github.com/gustavosbarreto/cdn/pkg/encodedtime"
 	"github.com/gustavosbarreto/cdn/storage"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var ErrNotFound = errors.New("not found")
@@ -29,6 +31,11 @@ func NewObjStore(backend string, journal *journal.Journal, storage *storage.Stor
 }
 
 func (obj *ObjStore) Fetch(url string) (*journal.FileMeta, error) {
+	log.WithFields(log.Fields{
+		"url":     url,
+		"backend": obj.backend,
+	}).Debug("Fetch file from backend")
+
 	cli := &http.Client{}
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s", obj.backend, url), nil)
@@ -61,6 +68,10 @@ func (obj *ObjStore) Fetch(url string) (*journal.FileMeta, error) {
 		return nil, err
 	}
 
+	log.WithFields(log.Fields{
+		"filename": filename,
+	}).Debug("File added to objstore")
+
 	return meta, nil
 }
 
@@ -74,6 +85,7 @@ func (obj *ObjStore) Get(url string) *journal.FileMeta {
 
 	_, err = obj.storage.Read(filename)
 	if err != nil {
+		log.WithFields(log.Fields{"filename": filename, "err": err}).Error("Failed to read file from storage")
 		return nil
 	}
 
@@ -83,11 +95,18 @@ func (obj *ObjStore) Get(url string) *journal.FileMeta {
 func (obj *ObjStore) Serve(url string) (*journal.FileMeta, *os.File, error) {
 	filename := obj.FileName(url)
 
+	log.WithFields(log.Fields{
+		"filename": filename,
+	}).Info("Serve file from objstore")
+
 	meta := obj.Get(filename)
 	if meta == nil {
+		log.WithFields(log.Fields{"filename": filename}).Debug("File not found in objstore")
+
 		var err error
 		meta, err = obj.Fetch(filename)
 		if err != nil {
+			log.WithFields(log.Fields{"filename": filename, "err": err}).Warn("Failed to fetch file")
 			return nil, nil, ErrNotFound
 		}
 	}

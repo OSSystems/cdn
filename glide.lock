@@ -1,5 +1,5 @@
 hash: cf8bb493a8c971e5ed2a849ffbf6635e72b787b81dc56e40d87f8301c1af1c2e
-updated: 2018-08-29T16:17:06.241721172-03:00
+updated: 2018-08-30T10:44:49.0469271-03:00
 imports:
 - name: github.com/boltdb/bolt
   version: 2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8
@@ -31,6 +31,8 @@ imports:
   version: 6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c
 - name: github.com/OSSystems/go-coap
   version: f2a4ec53cd348eba18c55a611372ae82332caf52
+- name: github.com/sirupsen/logrus
+  version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
 - name: github.com/spf13/cobra
   version: ef82de70bb3f60c65fb8eebacbb2d122ef517385
 - name: github.com/spf13/pflag
@@ -44,10 +46,12 @@ imports:
   subpackages:
   - acme
   - acme/autocert
+  - ssh/terminal
 - name: golang.org/x/sys
   version: 79b0c6888797020a994db17c8510466c72fe75d9
   subpackages:
   - unix
+  - windows
 testImports:
 - name: github.com/davecgh/go-spew
   version: 8991bc29aa16c548c550c7ff78260e27b9ab7c73

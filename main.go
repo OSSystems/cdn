@@ -14,6 +14,7 @@ import (
 	"github.com/gustavosbarreto/cdn/storage"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -46,6 +47,7 @@ func main() {
 	app.cmd.PersistentFlags().IntP("size", "", -1, "Max storage size in bytes (-1 for unlimited)")
 	app.cmd.PersistentFlags().StringP("http", "", "0.0.0.0:8080", "HTTP listen address")
 	app.cmd.PersistentFlags().StringP("coap", "", "0.0.0.0:5683", "CoAP listen address")
+	app.cmd.PersistentFlags().StringP("log", "", "info", "Log level (debug, info, warn, error, fatal, panic)")
 	app.cmd.MarkPersistentFlagRequired("backend")
 
 	if err := app.cmd.Execute(); err != nil {
@@ -55,19 +57,26 @@ func main() {
 }
 
 func execute(cmd *cobra.Command, args []string) {
+	level, err := log.ParseLevel(cmd.Flag("log").Value.String())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.SetLevel(level)
+
 	backend, err := url.ParseRequestURI(cmd.Flag("backend").Value.String())
 	if err != nil {
-		panic(err)
+		log.WithFields(log.Fields{"err": err}).Fatal("Failed to parse backend arg")
 	}
 
 	db, err := bolt.Open(cmd.Flag("db").Value.String(), 0600, nil)
 	if err != nil {
-		panic(err)
+		log.WithFields(log.Fields{"err": err}).Fatal("Failed to open database file")
 	}
 
 	size, err := cmd.Flags().GetInt("size")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	app.storage = storage.NewStorage(cmd.Flag("storage").Value.String())
@@ -78,20 +87,21 @@ func execute(cmd *cobra.Command, args []string) {
 	if monitorPlugin != "" {
 		plug, err := plugin.Open(monitorPlugin)
 		if err != nil {
-			panic(err)
+			log.WithFields(log.Fields{"plugin": monitorPlugin, "err": err}).Fatal("Failed to open monitor plugin file")
 		}
 
 		sym, err := plug.Lookup("Monitor")
 		if err != nil {
-			panic(err)
+			log.WithFields(log.Fields{"plugin": monitorPlugin, "err": err}).Fatal("Failed to open monitor plugin file")
 		}
 
 		var ok bool
 		app.monitor, ok = sym.(Monitor)
 		if !ok {
-			panic("unexpected type from module symbol")
+			log.WithFields(log.Fields{"plugin": monitorPlugin, "err": err}).Fatal("Unexpected type from module symbol")
 		}
 
+		log.WithFields(log.Fields{"plugin": monitorPlugin}).Info("Monitor plugin loaded")
 	} else {
 		app.monitor = &dummyMonitor{}
 	}
@@ -100,18 +110,18 @@ func execute(cmd *cobra.Command, args []string) {
 
 	udpAddr, err := net.ResolveUDPAddr("udp", cmd.Flag("coap").Value.String())
 	if err != nil {
-		panic(err)
+		log.WithFields(log.Fields{"err": err}).Fatal("Failed to parse coap address")
 	}
 
 	udpListener, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
-		panic(err)
+		log.WithFields(log.Fields{"err": err}).Fatal("Failed to listen for coap")
 	}
 
 	go func() {
 		err = coap.Serve(udpListener, &coapHandler{})
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}()
 
@@ -126,7 +136,7 @@ func execute(cmd *cobra.Command, args []string) {
 
 		err = e.Start(cmd.Flag("http").Value.String())
 		if err != nil {
-			panic(err)
+			log.WithFields(log.Fields{"err": err}).Fatal("Failed to listen for http")
 		}
 	}()
 
