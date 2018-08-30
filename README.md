@@ -56,3 +56,17 @@ To build the plugin use:
 $ cd samplemonitor
 $ go build -buildmode=plugin
 ```
+
+## Client usage
+
+Currently HTTP and CoAP protocols are supported. By default the HTTP server listen on `0.0.0.0:8080` and the CoAP listen on `0.0.0.0:5683`.
+
+When a request is made to cdn server the storage cache search for requested path, if the requested path is not found in storage cache then the requested patch is fetched from remote backend, otherwise the file is served from directly from storage cache. This means that you can send a `GET` request directly to cdn server instead of remote backend.
+
+Let's suppose that you have a file `archive.tar.gz` stored in a bucket on Amazon S3 (http://yourbucket.s3.amazonaws.com) and started the cdn server setting the backend address to your bucket address.
+
+The `archive.tar.gz` will be available in:
+
+* `http://localhost:8080/archive.tar.gz`
+* `coap://localhost:5683/archive.tar.gz`
+
