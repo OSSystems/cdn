@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gustavosbarreto/cdn/objstore"
+	"github.com/gustavosbarreto/cdn/pkg/httputil"
 	"github.com/labstack/echo"
 )
 
@@ -23,13 +24,12 @@ func handleHTTP(c echo.Context) error {
 		return err
 	}
 
-	http.ServeContent(c.Response(), c.Request(), meta.Name, time.Time(meta.Timestamp), f)
+	wc := httputil.NewResponseWriterCounter(c.Response())
+	http.ServeContent(wc, c.Request(), meta.Name, time.Time(meta.Timestamp), f)
+
+	if c.Response().Status == http.StatusOK {
+		app.monitor.RecordMetric(c.Request().URL.String(), c.Request().RemoteAddr, int(wc.Count()), meta.Size, time.Now())
+	}
 
 	return nil
-}
-
-func logHTTPRequest(c echo.Context, reqBody, resBody []byte) {
-	if c.Response().Status == http.StatusOK {
-		app.monitor.RecordMetric(c.Request().URL.String(), c.Request().RemoteAddr, len(resBody), int64(len(resBody)), time.Now())
-	}
 }

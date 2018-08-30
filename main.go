@@ -13,7 +13,6 @@ import (
 	"github.com/gustavosbarreto/cdn/objstore"
 	"github.com/gustavosbarreto/cdn/storage"
 	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -129,8 +128,6 @@ func execute(cmd *cobra.Command, args []string) {
 		e := echo.New()
 		e.HideBanner = true
 		e.HidePort = true
-
-		e.Use(middleware.BodyDump(logHTTPRequest))
 
 		e.GET("*", handleHTTP)
 
