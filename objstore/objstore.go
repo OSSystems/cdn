@@ -7,9 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gustavosbarreto/cdn/journal"
-	"github.com/gustavosbarreto/cdn/pkg/encodedtime"
-	"github.com/gustavosbarreto/cdn/storage"
+	"github.com/OSSystems/cdn/journal"
+	"github.com/OSSystems/cdn/pkg/encodedtime"
+	"github.com/OSSystems/cdn/storage"
 
 	log "github.com/sirupsen/logrus"
 )

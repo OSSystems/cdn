@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/OSSystems/cdn/journal"
+	"github.com/OSSystems/cdn/pkg/encodedtime"
+	"github.com/OSSystems/cdn/storage"
 	"github.com/boltdb/bolt"
-	"github.com/gustavosbarreto/cdn/journal"
-	"github.com/gustavosbarreto/cdn/pkg/encodedtime"
-	"github.com/gustavosbarreto/cdn/storage"
 	"github.com/stretchr/testify/assert"
 )
 

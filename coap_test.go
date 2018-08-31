@@ -13,11 +13,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/OSSystems/cdn/journal"
+	"github.com/OSSystems/cdn/objstore"
+	"github.com/OSSystems/cdn/storage"
 	coap "github.com/OSSystems/go-coap"
 	"github.com/boltdb/bolt"
-	"github.com/gustavosbarreto/cdn/journal"
-	"github.com/gustavosbarreto/cdn/objstore"
-	"github.com/gustavosbarreto/cdn/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"sort"
 
+	"github.com/OSSystems/cdn/pkg/encodedtime"
 	"github.com/boltdb/bolt"
-	"github.com/gustavosbarreto/cdn/pkg/encodedtime"
 )
 
 var journalBucketName = []byte("mapping")

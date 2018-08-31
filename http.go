@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gustavosbarreto/cdn/objstore"
-	"github.com/gustavosbarreto/cdn/pkg/httputil"
+	"github.com/OSSystems/cdn/objstore"
+	"github.com/OSSystems/cdn/pkg/httputil"
 	"github.com/labstack/echo"
 )
 

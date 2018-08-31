@@ -4,8 +4,8 @@ import (
 	"net"
 	"time"
 
+	"github.com/OSSystems/cdn/objstore"
 	coap "github.com/OSSystems/go-coap"
-	"github.com/gustavosbarreto/cdn/objstore"
 )
 
 func (app *App) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Message) *coap.Message {
