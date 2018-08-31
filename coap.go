@@ -49,7 +49,7 @@ func (app *App) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Message) *co
 		app.journal.Hit(meta)
 	}
 
-	app.monitor.RecordMetric(req.PathString(), a.String(), int64(n), meta.Size, time.Now())
+	app.monitor.RecordMetric("coap", req.PathString(), a.String(), int64(n), meta.Size, time.Now())
 
 	return msg
 }

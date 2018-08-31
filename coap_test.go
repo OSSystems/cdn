@@ -49,7 +49,7 @@ func TestCoapHandler(t *testing.T) {
 	sv.Start()
 	defer sv.Close()
 
-	mm.On("RecordMetric", "file", mock.Anything, int64(len(data)), int64(len(data)), mock.Anything).Return()
+	mm.On("RecordMetric", "coap", "file", mock.Anything, int64(len(data)), int64(len(data)), mock.Anything).Return()
 
 	app.objstore = objstore.NewObjStore(fmt.Sprintf("http://%s", sv.Listener.Addr().String()), app.journal, app.storage)
 
