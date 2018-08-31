@@ -29,8 +29,8 @@ func (m *mockMonitor) Init() {
 	m.Called()
 }
 
-func (m *mockMonitor) RecordMetric(path string, addr string, bytes int, size int64, timestamp time.Time) {
-	m.Called(path, addr, bytes, size, timestamp)
+func (m *mockMonitor) RecordMetric(path string, addr string, transferred int, size int64, timestamp time.Time) {
+	m.Called(path, addr, transferred, size, timestamp)
 }
 
 func TestHttpHandler(t *testing.T) {
@@ -60,7 +60,7 @@ func TestHttpHandler(t *testing.T) {
 	sv.Start()
 	defer sv.Close()
 
-	mm.On("RecordMetric", "/file", mock.Anything, len(data), int64(len(data)), mock.Anything).Return()
+	mm.On("RecordMetric", "/file", mock.Anything, int64(len(data)), int64(len(data)), mock.Anything).Return()
 
 	app.objstore = objstore.NewObjStore(fmt.Sprintf("http://%s", sv.Listener.Addr().String()), app.journal, app.storage)
 

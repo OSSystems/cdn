@@ -28,7 +28,7 @@ func (app *App) handleHTTP(c echo.Context) error {
 	http.ServeContent(wc, c.Request(), meta.Name, time.Time(meta.Timestamp), f)
 
 	if c.Response().Status == http.StatusOK {
-		app.monitor.RecordMetric(c.Request().URL.String(), c.Request().RemoteAddr, int(wc.Count()), meta.Size, time.Now())
+		app.monitor.RecordMetric(c.Request().URL.String(), c.Request().RemoteAddr, int64(wc.Count()), meta.Size, time.Now())
 	}
 
 	return nil
