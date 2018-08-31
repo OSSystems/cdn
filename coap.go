@@ -8,10 +8,7 @@ import (
 	"github.com/gustavosbarreto/cdn/objstore"
 )
 
-type coapHandler struct {
-}
-
-func (h *coapHandler) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Message) *coap.Message {
+func (app *App) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Message) *coap.Message {
 	path := req.PathString()
 
 	msg := &coap.Message{

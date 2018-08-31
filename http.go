@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo"
 )
 
-func handleHTTP(c echo.Context) error {
+func (app *App) handleHTTP(c echo.Context) error {
 	path := c.Request().URL.Path[1:]
 
 	meta, f, err := app.objstore.Serve(path)

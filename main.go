@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"net"
 	"net/url"
-	"os"
 	"plugin"
 
 	coap "github.com/OSSystems/go-coap"
@@ -27,18 +25,13 @@ type App struct {
 	monitor Monitor
 }
 
-var app *App
-
-func init() {
-	app = &App{
+func main() {
+	app := &App{
 		cmd: &cobra.Command{
 			Use: "cdn",
-			Run: execute,
 		},
 	}
-}
 
-func main() {
 	app.cmd.PersistentFlags().StringP("backend", "", "", "Backend HTTP server URL")
 	app.cmd.PersistentFlags().StringP("monitor", "", "", "Monitor plugin")
 	app.cmd.PersistentFlags().StringP("db", "", "state.db", "Database file")
@@ -49,13 +42,14 @@ func main() {
 	app.cmd.PersistentFlags().StringP("log", "", "info", "Log level (debug, info, warn, error, fatal, panic)")
 	app.cmd.MarkPersistentFlagRequired("backend")
 
+	app.cmd.Run = func(cmd *cobra.Command, args []string) { app.execute(cmd, args) }
+
 	if err := app.cmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }
 
-func execute(cmd *cobra.Command, args []string) {
+func (app *App) execute(cmd *cobra.Command, args []string) {
 	level, err := log.ParseLevel(cmd.Flag("log").Value.String())
 	if err != nil {
 		log.Fatal(err)
@@ -118,7 +112,7 @@ func execute(cmd *cobra.Command, args []string) {
 	}
 
 	go func() {
-		err = coap.Serve(udpListener, &coapHandler{})
+		err = coap.Serve(udpListener, app)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -129,7 +123,7 @@ func execute(cmd *cobra.Command, args []string) {
 		e.HideBanner = true
 		e.HidePort = true
 
-		e.GET("*", handleHTTP)
+		e.GET("*", app.handleHTTP)
 
 		err = e.Start(cmd.Flag("http").Value.String())
 		if err != nil {
