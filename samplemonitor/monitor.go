@@ -10,7 +10,7 @@ type monitor struct{}
 func (l monitor) Init() {
 }
 
-func (l monitor) RecordMetric(protocol string, path string, addr string, transferred int, size int64, timestamp time.Time) {
+func (l monitor) RecordMetric(protocol, path, addr string, transferred, size int64, timestamp time.Time) {
 	fmt.Println(protocol, path, addr, transferred, size, timestamp)
 }
 

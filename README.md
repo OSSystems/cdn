@@ -44,7 +44,7 @@ To create your own monitor plugin you must implement the following `Monitor` int
 ```go
 type Monitor interface {
         Init()
-        RecordMetric(protocol string, path string, addr string, transferred int, size int64, timestamp time.Time)
+        RecordMetric(protocol, path, addr string, transferred, size int64, timestamp time.Time)
 }
 ```
 

@@ -29,7 +29,7 @@ func (m *mockMonitor) Init() {
 	m.Called()
 }
 
-func (m *mockMonitor) RecordMetric(protocol string, path string, addr string, transferred int64, size int64, timestamp time.Time) {
+func (m *mockMonitor) RecordMetric(protocol, path, addr string, transferred, size int64, timestamp time.Time) {
 	m.Called(protocol, path, addr, transferred, size, timestamp)
 }
 
