@@ -6,6 +6,7 @@ import (
 
 	"github.com/OSSystems/cdn/objstore"
 	coap "github.com/OSSystems/go-coap"
+	"github.com/OSSystems/pkg/log"
 )
 
 func (app *App) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Message) *coap.Message {
@@ -25,10 +26,33 @@ func (app *App) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Message) *co
 
 	defer f.Close()
 
-	_, err = f.Seek(int64(req.Block2.Num*req.Block2.Size), 0)
-	if err != nil {
-		msg.Code = coap.InternalServerError
-		return msg
+	for timeout := time.After(time.Second * 10); ; {
+		select {
+		case <-timeout:
+			log.Warn("Timeout reading from stream")
+			msg.Code = coap.InternalServerError
+			return msg
+		default:
+		}
+
+		fi, err := f.Stat()
+		if err != nil {
+			msg.Code = coap.InternalServerError
+			return msg
+		}
+
+		// check if there are bytes available
+		if fi.Size() <= int64(req.Block2.Num*req.Block2.Size) {
+			continue // no more bytes available yet, wait for more
+		}
+
+		_, err = f.Seek(int64(req.Block2.Num*req.Block2.Size), 0)
+		if err != nil {
+			msg.Code = coap.InternalServerError
+			return msg
+		}
+
+		break
 	}
 
 	payload := make([]byte, req.Block2.Size)
