@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 
@@ -59,9 +60,10 @@ func TestObjStoreFetch(t *testing.T) {
 
 	obj := NewObjStore(fmt.Sprintf("http://%s", sv.Listener.Addr().String()), j, s)
 
-	meta, err := obj.Fetch("/file")
+	meta, rd, err := obj.Fetch("/file")
 	assert.NoError(t, err)
 	assert.NotNil(t, meta)
+	assert.NotNil(t, rd)
 	assert.Equal(t, "file", meta.Name)
 	assert.Equal(t, int64(len(data)), meta.Size)
 	assert.Equal(t, int64(0), meta.Hits)
@@ -91,7 +93,10 @@ func TestObjStoreGet(t *testing.T) {
 	err = j.Put(meta)
 	assert.NoError(t, err)
 
-	n, err := s.Write("file", bytes.NewReader(data))
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	n, err := s.Write("file", bytes.NewReader(data), &wg)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(len(data)), n)
 

@@ -3,6 +3,7 @@ package storage
 import (
 	"bytes"
 	"io/ioutil"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,7 +25,10 @@ func TestStorageReadWrite(t *testing.T) {
 
 	buf := bytes.NewBuffer(data)
 
-	n, err := s.Write("file", buf)
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	n, err := s.Write("file", buf, &wg)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(len(data)), n)
 
