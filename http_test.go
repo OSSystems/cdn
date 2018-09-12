@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/OSSystems/cdn/cluster"
 	"github.com/OSSystems/cdn/journal"
 	"github.com/OSSystems/cdn/objstore"
 	"github.com/OSSystems/cdn/storage"
@@ -48,6 +49,7 @@ func TestHttpHandler(t *testing.T) {
 		journal: journal.NewJournal(db, -1),
 		storage: storage.NewStorage(dir),
 		monitor: mm,
+		cluster: cluster.NewCluster(),
 	}
 
 	data := make([]byte, 4)

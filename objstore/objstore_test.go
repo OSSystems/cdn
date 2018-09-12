@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/OSSystems/cdn/cluster"
 	"github.com/OSSystems/cdn/journal"
 	"github.com/OSSystems/cdn/pkg/encodedtime"
 	"github.com/OSSystems/cdn/storage"
@@ -60,7 +61,7 @@ func TestObjStoreFetch(t *testing.T) {
 
 	obj := NewObjStore(fmt.Sprintf("http://%s", sv.Listener.Addr().String()), j, s)
 
-	meta, rd, err := obj.Fetch("/file")
+	meta, rd, err := obj.Fetch(http.DefaultTransport.(*http.Transport), "", "/file")
 	assert.NoError(t, err)
 	assert.NotNil(t, meta)
 	assert.NotNil(t, rd)
@@ -129,7 +130,7 @@ func TestObjStoreServe(t *testing.T) {
 
 	obj := NewObjStore(fmt.Sprintf("http://%s", sv.Listener.Addr().String()), j, s)
 
-	meta, f, err := obj.Serve("/file")
+	meta, f, err := obj.Serve("/file", cluster.NewCluster(), "")
 	assert.NoError(t, err)
 	assert.NotNil(t, meta)
 	assert.NotNil(t, f)

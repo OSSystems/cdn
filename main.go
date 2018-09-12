@@ -2,15 +2,18 @@ package main
 
 import (
 	"net"
+	"net/http"
 	"net/url"
 	"plugin"
 
+	"github.com/OSSystems/cdn/cluster"
 	"github.com/OSSystems/cdn/journal"
 	"github.com/OSSystems/cdn/objstore"
 	"github.com/OSSystems/cdn/storage"
 	coap "github.com/OSSystems/go-coap"
 	"github.com/boltdb/bolt"
 	"github.com/labstack/echo"
+	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -21,6 +24,8 @@ type App struct {
 	objstore *objstore.ObjStore
 	journal  *journal.Journal
 	storage  *storage.Storage
+	cluster  *cluster.Cluster
+	node     string
 
 	monitor Monitor
 }
@@ -39,6 +44,8 @@ func main() {
 	app.cmd.PersistentFlags().IntP("size", "", -1, "Max storage size in bytes (-1 for unlimited)")
 	app.cmd.PersistentFlags().StringP("http", "", "0.0.0.0:8080", "HTTP listen address")
 	app.cmd.PersistentFlags().StringP("coap", "", "0.0.0.0:5683", "CoAP listen address")
+	app.cmd.PersistentFlags().StringP("nodes", "", "", "Nodes to join")
+	app.cmd.PersistentFlags().StringP("cluster", "", "0.0.0.0:1313", "Cluster listen address")
 	app.cmd.PersistentFlags().StringP("log", "", "info", "Log level (debug, info, warn, error, fatal, panic)")
 	app.cmd.MarkPersistentFlagRequired("backend")
 
@@ -111,6 +118,20 @@ func (app *App) execute(cmd *cobra.Command, args []string) {
 		log.WithFields(log.Fields{"err": err}).Fatal("Failed to listen for coap")
 	}
 
+	app.cluster = cluster.NewCluster()
+	log.WithFields(log.Fields{
+		"node": app.cluster.NodeID(),
+	}).Info("Starting cdn")
+
+	cl, err := app.cluster.ListenAndServe(cmd.Flag("cluster").Value.String())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err = app.cluster.Join(cmd.Flag("nodes").Value.String()); err != nil {
+		log.Fatal(err)
+	}
+
 	go func() {
 		err = coap.Serve(udpListener, app)
 		if err != nil {
@@ -125,6 +146,13 @@ func (app *App) execute(cmd *cobra.Command, args []string) {
 
 		e.GET("*", app.handleHTTP)
 
+		go func() {
+			e := echo.New()
+			e.GET("*", app.internalHandler)
+			err := http.Serve(cl, e)
+			log.Fatal(err)
+		}()
+
 		err = e.Start(cmd.Flag("http").Value.String())
 		if err != nil {
 			log.WithFields(log.Fields{"err": err}).Fatal("Failed to listen for http")
@@ -132,4 +160,8 @@ func (app *App) execute(cmd *cobra.Command, args []string) {
 	}()
 
 	select {}
+}
+
+func nodeName() string {
+	return uuid.Must(uuid.NewV4()).String()
 }

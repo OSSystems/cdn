@@ -4,6 +4,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/OSSystems/cdn/cluster"
 	"github.com/OSSystems/cdn/objstore"
 	coap "github.com/OSSystems/go-coap"
 	"github.com/OSSystems/pkg/log"
@@ -18,7 +19,12 @@ func (app *App) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Message) *co
 		Token:     req.Token,
 	}
 
-	meta, f, err := app.objstore.Serve(path)
+	var cluster *cluster.Cluster
+	if req.Block2.Num == 0 { // only propagate to the cluster on first request
+		cluster = app.cluster
+	}
+
+	meta, f, err := app.objstore.Serve(path, cluster, "")
 	if err == objstore.ErrNotFound {
 		msg.Code = coap.NotFound
 		return msg
