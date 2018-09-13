@@ -12,7 +12,7 @@ import (
 func (app *App) handleHTTP(c echo.Context) error {
 	path := c.Request().URL.Path[1:]
 
-	meta, f, err := app.objstore.Serve(path)
+	meta, f, err := app.objstore.Serve(path, app.cluster, "")
 	if err == objstore.ErrNotFound {
 		return echo.NotFoundHandler(c)
 	}
@@ -24,8 +24,10 @@ func (app *App) handleHTTP(c echo.Context) error {
 		return err
 	}
 
+	sr := httputil.NewSizeReader(f, uint64(meta.Size), time.Second*10)
 	wc := httputil.NewResponseWriterCounter(c.Response())
-	http.ServeContent(wc, c.Request(), meta.Name, time.Time(meta.Timestamp), httputil.NewSizeReader(f, uint64(meta.Size), time.Second*10))
+
+	http.ServeContent(wc, c.Request(), meta.Name, time.Time(meta.Timestamp), sr)
 
 	if c.Response().Status == http.StatusOK {
 		app.monitor.RecordMetric("http", c.Request().URL.String(), c.Request().RemoteAddr, int64(wc.Count()), meta.Size, time.Now())

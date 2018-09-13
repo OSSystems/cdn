@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -13,17 +12,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/OSSystems/cdn/cluster"
 	"github.com/OSSystems/cdn/journal"
 	"github.com/OSSystems/cdn/objstore"
 	"github.com/OSSystems/cdn/storage"
-	coap "github.com/OSSystems/go-coap"
 	"github.com/boltdb/bolt"
+	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
-func TestCoapHandler(t *testing.T) {
+func TestInternalHandler(t *testing.T) {
 	dir, err := ioutil.TempDir("", "test")
 	assert.NoError(t, err)
 
@@ -32,13 +29,10 @@ func TestCoapHandler(t *testing.T) {
 	db, err := bolt.Open(filepath.Join(dir, "db"), 0600, nil)
 	assert.NoError(t, err)
 
-	mm := &mockMonitor{}
-
 	app := &App{
 		journal: journal.NewJournal(db, -1),
 		storage: storage.NewStorage(dir),
-		monitor: mm,
-		cluster: cluster.NewCluster(),
+		monitor: &dummyMonitor{},
 	}
 
 	data := make([]byte, 4)
@@ -51,23 +45,20 @@ func TestCoapHandler(t *testing.T) {
 	sv.Start()
 	defer sv.Close()
 
-	mm.On("RecordMetric", "coap", "file", mock.Anything, int64(len(data)), int64(len(data)), mock.Anything).Return()
-
 	app.objstore = objstore.NewObjStore(fmt.Sprintf("http://%s", sv.Listener.Addr().String()), app.journal, app.storage)
 
-	uaddr, _ := net.ResolveUDPAddr("udp", "127.0.0.1")
+	e := echo.New()
+	req := httptest.NewRequest(echo.GET, "/file", nil)
+	req.Header.Add("X-Backend", fmt.Sprintf("http://%s", sv.Listener.Addr().String()))
 
-	msg := &coap.Message{
-		Code:   coap.GET,
-		Block2: &coap.Block{Size: uint32(len(data))},
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	if assert.NoError(t, app.internalHandler(c)) {
+		assert.Equal(t, http.StatusOK, c.Response().Status)
+
+		body, err := ioutil.ReadAll(rec.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, data, body)
 	}
-
-	msg.SetPathString("/file")
-
-	res := app.ServeCOAP(nil, uaddr, msg)
-	assert.NotNil(t, res)
-	assert.Equal(t, coap.Content, res.Code)
-	assert.Equal(t, data, res.Payload)
-
-	mm.AssertExpectations(t)
 }

@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/OSSystems/cdn/cluster"
 	"github.com/OSSystems/cdn/journal"
 	"github.com/OSSystems/cdn/pkg/encodedtime"
 	"github.com/OSSystems/cdn/storage"
@@ -36,15 +37,25 @@ func NewObjStore(backend string, journal *journal.Journal, storage *storage.Stor
 	}
 }
 
-func (obj *ObjStore) Fetch(url string) (*journal.FileMeta, io.ReadCloser, error) {
+func (obj *ObjStore) Fetch(transport *http.Transport, backend, url string) (*journal.FileMeta, io.ReadCloser, error) {
+	if backend == "" {
+		backend = obj.backend
+	}
+
 	log.WithFields(log.Fields{
 		"url":     url,
-		"backend": obj.backend,
+		"backend": backend,
 	}).Debug("Fetch file from backend")
 
-	cli := &http.Client{}
+	cli := &http.Client{
+		Transport: transport,
+	}
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s", obj.backend, url), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s", backend, url), nil)
+	if backend != "" {
+		req.Header.Add("X-Backend", backend)
+	}
+
 	if err != nil {
 		return nil, nil, err
 	}
@@ -90,8 +101,8 @@ func (obj *ObjStore) Get(url string) *journal.FileMeta {
 	return meta
 }
 
-func (obj *ObjStore) Serve(url string) (*journal.FileMeta, *os.File, error) {
-	filename := obj.FileName(url)
+func (obj *ObjStore) Serve(uri string, cluster *cluster.Cluster, backend string) (*journal.FileMeta, *os.File, error) {
+	filename := obj.FileName(uri)
 
 	var wg sync.WaitGroup
 
@@ -102,7 +113,14 @@ func (obj *ObjStore) Serve(url string) (*journal.FileMeta, *os.File, error) {
 		var err error
 		var rd io.ReadCloser
 
-		meta, rd, err = obj.Fetch(url)
+		var transport *http.Transport
+		if backend == "" || cluster == nil {
+			transport = http.DefaultTransport.(*http.Transport)
+		} else {
+			transport = cluster.Transport()
+		}
+
+		meta, rd, err = obj.Fetch(transport, backend, uri)
 		if err != nil {
 			log.WithFields(log.Fields{"filename": filename, "err": err}).Warn("Failed to fetch file")
 			return nil, nil, ErrNotFound
@@ -137,6 +155,10 @@ func (obj *ObjStore) Serve(url string) (*journal.FileMeta, *os.File, error) {
 	f, err := obj.storage.Read(meta.Name)
 	if err != nil {
 		return meta, nil, ErrNotFound
+	}
+
+	if backend == "" && cluster != nil {
+		cluster.Propagate(uri)
 	}
 
 	return meta, f, nil
