@@ -46,6 +46,7 @@ func main() {
 	app.cmd.PersistentFlags().StringP("coap", "", "0.0.0.0:5683", "CoAP listen address")
 	app.cmd.PersistentFlags().StringP("nodes", "", "", "Nodes to join")
 	app.cmd.PersistentFlags().StringP("cluster", "", "0.0.0.0:1313", "Cluster listen address")
+	app.cmd.PersistentFlags().StringP("api", "", "0.0.0.0:1314", "API listen address")
 	app.cmd.PersistentFlags().StringP("log", "", "info", "Log level (debug, info, warn, error, fatal, panic)")
 	app.cmd.MarkPersistentFlagRequired("backend")
 
@@ -151,6 +152,17 @@ func (app *App) execute(cmd *cobra.Command, args []string) {
 			e.GET("*", app.internalHandler)
 			err := http.Serve(cl, e)
 			log.Fatal(err)
+		}()
+
+		go func() {
+			e := echo.New()
+			e.HideBanner = true
+			e.HidePort = true
+
+			e.GET("/stats", app.handleStats)
+			e.DELETE("/purge", app.handlePurge)
+			e.GET("/query", app.handleQuery)
+			log.Fatal(e.Start(cmd.Flag("api").Value.String()))
 		}()
 
 		err = e.Start(cmd.Flag("http").Value.String())
