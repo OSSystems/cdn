@@ -1,5 +1,6 @@
 package: .
 import:
+- package: github.com/OSSystems/crosscoap
 - package: github.com/OSSystems/go-coap
 - package: github.com/boltdb/bolt
   version: ~1.3.1

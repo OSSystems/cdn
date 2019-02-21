@@ -5,6 +5,8 @@ imports:
   version: 2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8
 - name: github.com/dgrijalva/jwt-go
   version: 06ea1031745cb8b3dab3f6a236daf2b0aa468b7e
+- name: github.com/OSSystems/crosscoap
+  version: 499aaaacdd1cf228c941323b3f1aac55a888fefe
 - name: github.com/OSSystems/cdn
   version: 2e204955eba57c32e6f4a1118e396be6491df5fc
   subpackages:
