@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"crypto/rand"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -35,6 +34,7 @@ func (m *mockMonitor) RecordMetric(protocol, path, addr string, transferred, siz
 }
 
 func TestHttpHandler(t *testing.T) {
+
 	dir, err := ioutil.TempDir("", "test")
 	assert.NoError(t, err)
 
@@ -52,8 +52,19 @@ func TestHttpHandler(t *testing.T) {
 		cluster: cluster.NewCluster(),
 	}
 
-	data := make([]byte, 4)
-	rand.Read(data)
+	data := []byte("hello world")
+
+	testCaseHttp := []struct {
+		method string
+		data   []byte
+	}{
+		{echo.GET, nil},
+		{echo.OPTIONS, nil},
+		{echo.PUT, data},
+		{echo.POST, data},
+		{echo.TRACE, nil},
+		{echo.DELETE, data},
+	}
 
 	sv := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeContent(w, r, "file", time.Now(), bytes.NewReader(data))
@@ -67,18 +78,19 @@ func TestHttpHandler(t *testing.T) {
 	app.objstore = objstore.NewObjStore(fmt.Sprintf("http://%s", sv.Listener.Addr().String()), app.journal, app.storage)
 
 	e := echo.New()
-	req := httptest.NewRequest(echo.GET, "/file", nil)
-	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
+	for _, tc := range testCaseHttp {
+		req := httptest.NewRequest(tc.method, "/file", bytes.NewReader(data))
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
 
-	if assert.NoError(t, app.handleHTTP(c)) {
-		assert.Equal(t, http.StatusOK, c.Response().Status)
-		assert.Equal(t, http.StatusOK, c.Response().Status)
+		if assert.NoError(t, app.handleHTTP(c)) {
+			assert.Equal(t, http.StatusOK, c.Response().Status)
+			assert.Equal(t, http.StatusOK, c.Response().Status)
 
-		body, err := ioutil.ReadAll(rec.Body)
-		assert.NoError(t, err)
-		assert.Equal(t, data, body)
+			body, err := ioutil.ReadAll(rec.Body)
+			assert.NoError(t, err)
+			assert.Equal(t, data, body)
+		}
 	}
-
 	mm.AssertExpectations(t)
 }

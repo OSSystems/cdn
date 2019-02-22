@@ -150,6 +150,12 @@ func (app *App) execute(cmd *cobra.Command, args []string) {
 		e.HidePort = true
 
 		e.GET("*", app.handleHTTP)
+		e.POST("*", app.handleHTTP)
+		e.PUT("*", app.handleHTTP)
+		e.HEAD("*", app.handleHTTP)
+		e.OPTIONS("*", app.handleHTTP)
+		e.DELETE("*", app.handleHTTP)
+		e.TRACE("*", app.handleHTTP)
 
 		go func() {
 			e := echo.New()
