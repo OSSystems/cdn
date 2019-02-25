@@ -12,6 +12,8 @@ RUN go build
 
 FROM alpine:3.7
 
+RUN apk --update --no-cache add ca-certificates
+
 COPY --from=builder /go/src/github.com/OSSystems/cdn/cdn /usr/local/bin/
 
 ENTRYPOINT ["/usr/local/bin/cdn"]
