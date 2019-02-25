@@ -24,14 +24,14 @@ var (
 )
 
 type ObjStore struct {
-	backend string
+	Backend string
 	journal *journal.Journal
 	storage *storage.Storage
 }
 
 func NewObjStore(backend string, journal *journal.Journal, storage *storage.Storage) *ObjStore {
 	return &ObjStore{
-		backend: backend,
+		Backend: backend,
 		journal: journal,
 		storage: storage,
 	}
@@ -39,7 +39,7 @@ func NewObjStore(backend string, journal *journal.Journal, storage *storage.Stor
 
 func (obj *ObjStore) Fetch(transport *http.Transport, backend, url string) (*journal.FileMeta, io.ReadCloser, error) {
 	if backend == "" {
-		backend = obj.backend
+		backend = obj.Backend
 	}
 
 	log.WithFields(log.Fields{

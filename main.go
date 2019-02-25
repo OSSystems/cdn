@@ -28,6 +28,7 @@ type App struct {
 	node     string
 
 	monitor Monitor
+	cache   string
 }
 
 func main() {
@@ -37,6 +38,7 @@ func main() {
 		},
 	}
 
+	app.cmd.PersistentFlags().StringP("cache", "", "", "Path will be cached")
 	app.cmd.PersistentFlags().StringP("backend", "", "", "Backend HTTP server URL")
 	app.cmd.PersistentFlags().StringP("monitor", "", "", "Monitor plugin")
 	app.cmd.PersistentFlags().StringP("db", "", "state.db", "Database file")
@@ -79,9 +81,12 @@ func (app *App) execute(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
+	cache := cmd.Flag("cache").Value.String()
+
 	app.storage = storage.NewStorage(cmd.Flag("storage").Value.String())
 	app.journal = journal.NewJournal(db, int64(size))
 	app.objstore = objstore.NewObjStore(backend.String(), app.journal, app.storage)
+	app.cache = cache
 
 	monitorPlugin := cmd.Flag("monitor").Value.String()
 	if monitorPlugin != "" {
@@ -145,6 +150,12 @@ func (app *App) execute(cmd *cobra.Command, args []string) {
 		e.HidePort = true
 
 		e.GET("*", app.handleHTTP)
+		e.POST("*", app.handleHTTP)
+		e.PUT("*", app.handleHTTP)
+		e.HEAD("*", app.handleHTTP)
+		e.OPTIONS("*", app.handleHTTP)
+		e.DELETE("*", app.handleHTTP)
+		e.TRACE("*", app.handleHTTP)
 
 		go func() {
 			e := echo.New()
