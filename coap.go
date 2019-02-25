@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -20,7 +21,15 @@ const (
 
 func doHTTPRequest(req *http.Request) (*http.Response, []byte, error) {
 	timeout := defaultHTTPTimeout
-	httpClient := &http.Client{Timeout: timeout}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	httpClient := &http.Client{
+		Timeout:   timeout,
+		Transport: tr,
+	}
 
 	httpResp, err := httpClient.Do(req)
 	if err != nil {
