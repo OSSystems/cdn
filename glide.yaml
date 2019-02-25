@@ -1,4 +1,4 @@
-package: .
+package: github.com/OSSystems/cdn
 import:
 - package: github.com/OSSystems/crosscoap
 - package: github.com/OSSystems/go-coap
