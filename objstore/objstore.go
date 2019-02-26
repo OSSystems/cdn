@@ -1,6 +1,7 @@
 package objstore
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -119,6 +120,8 @@ func (obj *ObjStore) Serve(uri string, cluster *cluster.Cluster, backend string)
 		} else {
 			transport = cluster.Transport()
 		}
+
+		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 		meta, rd, err = obj.Fetch(transport, backend, uri)
 		if err != nil {
