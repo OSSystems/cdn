@@ -80,7 +80,7 @@ func (app *App) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Message) *co
 		if waitForResponse {
 			coapResp := <-responseChan
 
-			app.monitor.RecordMetric("coap", req.PathString(), a.String(), int64(len(coapResp.Payload)), int64(0), time.Now())
+			app.monitor.RecordMetric("coap", req.PathString(), a.String(), int64(len(coapResp.Payload)), int64(0), time.Now(), ProxyType)
 
 			return coapResp
 		} else {
@@ -155,7 +155,7 @@ func (app *App) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Message) *co
 		app.journal.Hit(meta)
 	}
 
-	app.monitor.RecordMetric("coap", req.PathString(), a.String(), int64(n), meta.Size, time.Now())
+	app.monitor.RecordMetric("coap", req.PathString(), a.String(), int64(n), meta.Size, time.Now(), CacheType)
 
 	return msg
 }

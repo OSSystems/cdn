@@ -31,6 +31,13 @@ type App struct {
 	cache   string
 }
 
+type Method int
+
+const (
+	ProxyType = iota
+	CacheType
+)
+
 func main() {
 	app := &App{
 		cmd: &cobra.Command{
