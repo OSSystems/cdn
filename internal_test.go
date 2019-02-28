@@ -14,6 +14,7 @@ import (
 
 	"github.com/OSSystems/cdn/journal"
 	"github.com/OSSystems/cdn/objstore"
+	"github.com/OSSystems/cdn/pkg/monitors"
 	"github.com/OSSystems/cdn/storage"
 	"github.com/boltdb/bolt"
 	"github.com/labstack/echo"
@@ -32,7 +33,7 @@ func TestInternalHandler(t *testing.T) {
 	app := &App{
 		journal: journal.NewJournal(db, -1),
 		storage: storage.NewStorage(dir),
-		monitor: &dummyMonitor{},
+		monitor: &monitors.DummyMonitor{},
 	}
 
 	data := make([]byte, 4)

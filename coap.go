@@ -10,6 +10,8 @@ import (
 
 	"github.com/OSSystems/cdn/cluster"
 	"github.com/OSSystems/cdn/objstore"
+	"github.com/OSSystems/cdn/pkg/monitors"
+
 	"github.com/OSSystems/crosscoap"
 	coap "github.com/OSSystems/go-coap"
 	log "github.com/sirupsen/logrus"
@@ -80,7 +82,7 @@ func (app *App) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Message) *co
 		if waitForResponse {
 			coapResp := <-responseChan
 
-			app.monitor.RecordMetric("coap", req.PathString(), a.String(), int64(len(coapResp.Payload)), int64(0), time.Now(), ProxyType)
+			app.monitor.RecordMetric("coap", req.PathString(), a.String(), int64(len(coapResp.Payload)), int64(0), time.Now(), monitors.ProxyType)
 
 			return coapResp
 		} else {
@@ -155,7 +157,7 @@ func (app *App) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Message) *co
 		app.journal.Hit(meta)
 	}
 
-	app.monitor.RecordMetric("coap", req.PathString(), a.String(), int64(n), meta.Size, time.Now(), CacheType)
+	app.monitor.RecordMetric("coap", req.PathString(), a.String(), int64(n), meta.Size, time.Now(), monitors.CacheType)
 
 	return msg
 }

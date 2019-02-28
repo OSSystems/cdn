@@ -9,6 +9,7 @@ import (
 	"github.com/OSSystems/cdn/cluster"
 	"github.com/OSSystems/cdn/journal"
 	"github.com/OSSystems/cdn/objstore"
+	"github.com/OSSystems/cdn/pkg/monitors"
 	"github.com/OSSystems/cdn/storage"
 	coap "github.com/OSSystems/go-coap"
 	"github.com/boltdb/bolt"
@@ -27,16 +28,9 @@ type App struct {
 	cluster  *cluster.Cluster
 	node     string
 
-	monitor Monitor
+	monitor monitors.Monitor
 	cache   string
 }
-
-type Method int
-
-const (
-	ProxyType = iota
-	CacheType
-)
 
 func main() {
 	app := &App{
@@ -108,14 +102,14 @@ func (app *App) execute(cmd *cobra.Command, args []string) {
 		}
 
 		var ok bool
-		app.monitor, ok = sym.(Monitor)
+		app.monitor, ok = sym.(monitors.Monitor)
 		if !ok {
 			log.WithFields(log.Fields{"plugin": monitorPlugin, "err": err}).Fatal("Unexpected type from module symbol")
 		}
 
 		log.WithFields(log.Fields{"plugin": monitorPlugin}).Info("Monitor plugin loaded")
 	} else {
-		app.monitor = &dummyMonitor{}
+		app.monitor = &monitors.DummyMonitor{}
 	}
 
 	app.monitor.Init()
