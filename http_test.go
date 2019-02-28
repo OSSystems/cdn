@@ -14,6 +14,7 @@ import (
 	"github.com/OSSystems/cdn/cluster"
 	"github.com/OSSystems/cdn/journal"
 	"github.com/OSSystems/cdn/objstore"
+	"github.com/OSSystems/cdn/pkg/monitors"
 	"github.com/OSSystems/cdn/storage"
 	"github.com/boltdb/bolt"
 	"github.com/labstack/echo"
@@ -29,8 +30,8 @@ func (m *mockMonitor) Init() {
 	m.Called()
 }
 
-func (m *mockMonitor) RecordMetric(protocol, path, addr string, transferred, size int64, timestamp time.Time) {
-	m.Called(protocol, path, addr, transferred, size, timestamp)
+func (m *mockMonitor) RecordMetric(protocol, path, addr string, transferred, size int64, timestamp time.Time, transferredMethod monitors.Method) {
+	m.Called(protocol, path, addr, transferred, size, timestamp, transferredMethod)
 }
 
 func TestHttpHandler(t *testing.T) {
@@ -73,7 +74,7 @@ func TestHttpHandler(t *testing.T) {
 	sv.Start()
 	defer sv.Close()
 
-	mm.On("RecordMetric", "http", "/file", mock.Anything, int64(len(data)), int64(len(data)), mock.Anything).Return()
+	mm.On("RecordMetric", "http", "/file", mock.Anything, int64(len(data)), int64(len(data)), mock.Anything, mock.Anything).Return()
 
 	app.objstore = objstore.NewObjStore(fmt.Sprintf("http://%s", sv.Listener.Addr().String()), app.journal, app.storage)
 

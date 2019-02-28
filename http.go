@@ -12,6 +12,7 @@ import (
 
 	"github.com/OSSystems/cdn/objstore"
 	"github.com/OSSystems/cdn/pkg/httputil"
+	"github.com/OSSystems/cdn/pkg/monitors"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
 )
@@ -53,7 +54,7 @@ func (app *App) handleHTTP(c echo.Context) error {
 		http.ServeContent(wc, c.Request(), "", time.Now(), sr)
 
 		if c.Response().Status == http.StatusOK {
-			app.monitor.RecordMetric("http", c.Request().URL.String(), c.Request().RemoteAddr, int64(wc.Count()), int64(len(body)), time.Now(), ProxyType)
+			app.monitor.RecordMetric("http", c.Request().URL.String(), c.Request().RemoteAddr, int64(wc.Count()), int64(len(body)), time.Now(), monitors.ProxyType)
 		}
 
 		return nil
@@ -78,7 +79,7 @@ func (app *App) handleHTTP(c echo.Context) error {
 		http.ServeContent(wc, c.Request(), meta.Name, time.Time(meta.Timestamp), sr)
 
 		if c.Response().Status == http.StatusOK {
-			app.monitor.RecordMetric("http", c.Request().URL.String(), c.Request().RemoteAddr, int64(wc.Count()), meta.Size, time.Now(), CacheType)
+			app.monitor.RecordMetric("http", c.Request().URL.String(), c.Request().RemoteAddr, int64(wc.Count()), meta.Size, time.Now(), monitors.CacheType)
 		}
 		return nil
 	}
