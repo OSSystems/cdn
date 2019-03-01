@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -82,7 +83,7 @@ func (app *App) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Message) *co
 		if waitForResponse {
 			coapResp := <-responseChan
 
-			app.monitor.RecordMetric("coap", req.PathString(), a.String(), int64(len(coapResp.Payload)), int64(0), time.Now(), monitors.ProxyType)
+			app.monitor.RecordMetric("coap", fmt.Sprintf("/%s", req.PathString()), a.String(), int64(len(coapResp.Payload)), int64(0), time.Now(), monitors.ProxyType)
 
 			return coapResp
 		} else {
@@ -157,7 +158,7 @@ func (app *App) ServeCOAP(l *net.UDPConn, a *net.UDPAddr, req *coap.Message) *co
 		app.journal.Hit(meta)
 	}
 
-	app.monitor.RecordMetric("coap", req.PathString(), a.String(), int64(n), meta.Size, time.Now(), monitors.CacheType)
+	app.monitor.RecordMetric("coap", fmt.Sprintf("/%s", req.PathString()), a.String(), int64(n), meta.Size, time.Now(), monitors.CacheType)
 
 	return msg
 }
