@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	defaultHTTPTimeout = 5 * time.Second
+	defaultHTTPTimeout = 30 * time.Second
 )
 
 func doHTTPRequest(req *http.Request) (*http.Response, []byte, error) {
