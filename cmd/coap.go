@@ -9,8 +9,8 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/OSSystems/cdn/cluster"
-	"github.com/OSSystems/cdn/objstore"
+	"github.com/OSSystems/cdn/internal/cluster"
+	"github.com/OSSystems/cdn/internal/objstore"
 	"github.com/OSSystems/cdn/pkg/monitors"
 
 	"github.com/OSSystems/crosscoap"

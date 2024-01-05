@@ -11,10 +11,10 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/OSSystems/cdn/cluster"
-	"github.com/OSSystems/cdn/journal"
+	"github.com/OSSystems/cdn/internal/cluster"
+	"github.com/OSSystems/cdn/internal/journal"
+	"github.com/OSSystems/cdn/internal/storage"
 	"github.com/OSSystems/cdn/pkg/encodedtime"
-	"github.com/OSSystems/cdn/storage"
 
 	log "github.com/sirupsen/logrus"
 )
