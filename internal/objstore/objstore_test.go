@@ -13,10 +13,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/OSSystems/cdn/cluster"
-	"github.com/OSSystems/cdn/journal"
+	"github.com/OSSystems/cdn/internal/cluster"
+	"github.com/OSSystems/cdn/internal/journal"
+	"github.com/OSSystems/cdn/internal/storage"
 	"github.com/OSSystems/cdn/pkg/encodedtime"
-	"github.com/OSSystems/cdn/storage"
 	"github.com/boltdb/bolt"
 	"github.com/stretchr/testify/assert"
 )

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/OSSystems/cdn/objstore"
+	"github.com/OSSystems/cdn/internal/objstore"
 	"github.com/OSSystems/cdn/pkg/httputil"
 	"github.com/OSSystems/cdn/pkg/monitors"
 	"github.com/labstack/echo"
