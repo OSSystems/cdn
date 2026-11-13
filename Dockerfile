@@ -1,4 +1,4 @@
-FROM golang:1.21.5-alpine3.19 as builder
+FROM golang:1.27-alpine as builder
 
 RUN apk --update --no-cache add git build-base
 
@@ -11,7 +11,7 @@ RUN go mod edit -dropreplace github.com/OSSystems/cdn && \
     go mod tidy && \
     go build
 
-FROM alpine:3.19
+FROM alpine:3.22
 
 RUN apk --update --no-cache add ca-certificates
 

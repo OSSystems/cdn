@@ -47,6 +47,9 @@ func main() {
 	app.cmd.PersistentFlags().IntP("size", "", -1, "Max storage size in bytes (-1 for unlimited)")
 	app.cmd.PersistentFlags().StringP("http", "", "0.0.0.0:8080", "HTTP listen address")
 	app.cmd.PersistentFlags().StringP("coap", "", "0.0.0.0:5683", "CoAP listen address")
+	app.cmd.PersistentFlags().StringP("coaps", "", "", "CoAPS (DTLS) listen address, disabled when empty")
+	app.cmd.PersistentFlags().StringP("coaps-cert", "", "", "CoAPS certificate chain (PEM)")
+	app.cmd.PersistentFlags().StringP("coaps-key", "", "", "CoAPS private key (PEM)")
 	app.cmd.PersistentFlags().StringP("nodes", "", "", "Nodes to join")
 	app.cmd.PersistentFlags().StringP("cluster", "", "0.0.0.0:1313", "Cluster listen address")
 	app.cmd.PersistentFlags().StringP("log", "", "info", "Log level (debug, info, warn, error, fatal, panic)")
@@ -144,6 +147,22 @@ func (app *App) execute(cmd *cobra.Command, args []string) {
 			log.Fatal(err)
 		}
 	}()
+
+	if coapsAddr := cmd.Flag("coaps").Value.String(); coapsAddr != "" {
+		cert, err := newCertificateFile(cmd.Flag("coaps-cert").Value.String(), cmd.Flag("coaps-key").Value.String())
+		if err != nil {
+			log.WithFields(log.Fields{"err": err}).Fatal("Failed to load CoAPS certificate")
+		}
+
+		coapsListener, err := listenCOAPS(coapsAddr, cert)
+		if err != nil {
+			log.WithFields(log.Fields{"err": err}).Fatal("Failed to listen for coaps")
+		}
+
+		go func() {
+			log.Fatal(app.serveCOAPS(coapsListener))
+		}()
+	}
 
 	go func() {
 		e := echo.New()
